@@ -16,14 +16,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/VKverify', (req, res) => {
-  const accessTokenURL = `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=http://localhost:3800/VKverify&code=${req.query.code}`;
+  const accessTokenURL = `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=${process.env.VK_REDIRECT_URI}/VKverify&code=${req.query.code}`;
 
-  request.get(accessTokenURL, (err, accessTokenResponse) => {
-    if (err) {
-      return res.status(400).send(err);
+  request.get(accessTokenURL, (err, response) => {
+    const body = JSON.parse(response.body);
+    if (err || body.error) {
+      return res.status(400).send(err || body.error);
     }
 
-    const body = JSON.parse(accessTokenResponse.body);
     User.findOrCreate(body['access_token'], body['user_id'])
       .then((user) => {
         res.redirect(`${process.env.CLIENT_URL}/main?vkId=${user.vkId}`);

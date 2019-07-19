@@ -11,6 +11,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// CORS
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', process.env.CLIENT_URL);
+  res.header('Access-Control-Allow-Methods', 'GET, DELETE');
+  next();
+});
+
 app.get('/', (req, res) => {
   res.send('Test for Webim.ru');
 });

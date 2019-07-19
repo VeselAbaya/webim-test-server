@@ -11,6 +11,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.get('/', (req, res) => {
+  res.send('Test for Webim.ru');
+});
+
 app.get('/VKverify', (req, res) => {
   const accessTokenURL = `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=http://localhost:3800/VKverify&code=${req.query.code}`;
 

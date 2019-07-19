@@ -1,8 +1,8 @@
 require('./config/config');
+require('./db/mongoose');
 
 const express = require('express');
-const passport = require('passport');
-const VKontakteStrategy = require('passport-vkontakte').Strategy;
+const request = require('request');
 
 const User = require('./db/models/user');
 
@@ -11,44 +11,67 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+app.get('/VKverify', (req, res) => {
+  const accessTokenURL = `https://oauth.vk.com/access_token?client_id=${process.env.VK_CLIENT_ID}&client_secret=${process.env.VK_CLIENT_SECRET}&redirect_uri=http://localhost:3800/VKverify&code=${req.query.code}`;
 
-// passport.use(new VKontakteStrategy({
-//     clientID:     VKONTAKTE_APP_ID, // VK.com docs call it 'API ID', 'app_id', 'api_id', 'client_id' or 'apiId'
-//     clientSecret: VKONTAKTE_APP_SECRET,
-//     callbackURL:  `http://localhost:${process.env.PORT}/auth/vkontakte/callback`
-//   },
-//   (accessToken, refreshToken, params, profile, done) => {
-//
-//     // Now that we have user's `profile` as seen by VK, we can
-//     // use it to find corresponding database records on our side.
-//     // Also we have user's `params` that contains email address (if set in
-//     // scope), token lifetime, etc.
-//     // Here, we have a hypothetical `User` class which does what it says.
-//     User.findOrCreate(profile.id)
-//       .then(function (user) { done(null, user); })
-//       .catch(done);
-//   }
-// ));
-//
-// // User session support for our hypothetical `user` objects.
-// passport.serializeUser(function(user, done) {
-//   done(null, user._id);
-// });
-//
-// passport.deserializeUser(function(id, done) {
-//   User.findById(id)
-//     .then(function (user) { done(null, user); })
-//     .catch(done);
-// });
+  request.get(accessTokenURL, (err, accessTokenResponse) => {
+    if (err) {
+      res.status(400).send(err);
+    }
 
-app.get('/', (req, res) => {
-  res.send("I'm alive");
+    const body = JSON.parse(accessTokenResponse.body);
+    User.findOrCreate(body['access_token'], body['user_id'])
+      .then((user) => {
+        res.redirect(`http://localhost:4200/main?vkId=${user.vkId}`);
+      })
+      .catch(err => {
+        res.status(400).send(err);
+      })
+  })
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Webim test server started up on port ${process.env.PORT}`)
+app.get('/VKgetfriends/:vkId', (req, res) => {
+  const vkId = req.params['vkId'];
+
+  User.findOne({vkId})
+    .then(user => {
+      if (!user) {
+        res.status(400).send(`no user with vkId: ${vkId}`);
+      }
+
+      request(
+        `https://api.vk.com/method/friends.get?v=5.101&access_token=${user.vkToken}&order=random&count=5&fields=photo_50,online`,
+        (err, response) => {
+          const body = JSON.parse(response.body);
+          if (err || body.error) {
+            return res.status(400).send(err || body.error);
+          }
+
+          res.send(body.response.items);
+        }
+      )
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
 });
+
+app.delete('/VKlogout/:vkId', (req, res) => {
+  const vkId = req.params['vkId'];
+
+  User.findOneAndDelete({vkId})
+    .then(user => {
+      if (!user) {
+        return res.status(404).send(`no user with vkId: ${vkId}`);
+      }
+
+      res.status(200).send();
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
+app.listen(process.env.PORT);
 
 module.exports = app;

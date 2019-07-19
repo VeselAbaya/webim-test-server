@@ -1,5 +1,5 @@
 {
   "PORT": 3800,
   "MONGODB_URI": "mongodb://localhost:27017/WebimTest",
-  "CLIENT_URL": "https://veselabaya.github.io/webim-test-front"
+  "CLIENT_URL": "http://localhost:4200"
 }

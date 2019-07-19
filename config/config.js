@@ -2,13 +2,13 @@ const env = process.env.NODE_ENV || 'development'; // NODE_ENV - for heroku and 
 
 process.env = {
   ...process.env,
-  ...require('config'),
+  ...require('./config'),
 };
 
 if (env === 'development') {
   process.env = {
     ...process.env,
-    ...require('devconfig')
+    ...require('./devconfig')
   };
 }
 else { // production

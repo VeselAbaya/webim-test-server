@@ -26,7 +26,7 @@ app.get('/VKverify', (req, res) => {
     const body = JSON.parse(accessTokenResponse.body);
     User.findOrCreate(body['access_token'], body['user_id'])
       .then((user) => {
-        res.redirect(`http://localhost:4200/main?vkId=${user.vkId}`);
+        res.redirect(`${process.env.CLIENT_URL}/main?vkId=${user.vkId}`);
       })
       .catch(err => {
         res.status(400).send(err);

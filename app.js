@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', process.env.CORS_DOMEN);
   res.header('Access-Control-Allow-Methods', 'GET, DELETE');
+  res.header('Access-Control-Allow-Headers', 'User-Id');
   next();
 });
 
@@ -33,7 +34,7 @@ app.get('/VKverify', (req, res) => {
 
     User.findOrCreate(body['access_token'], body['user_id'])
       .then((user) => {
-        res.redirect(`${process.env.CLIENT_URL}/main?vkId=${user.vkId}`);
+        res.redirect(`${process.env.CLIENT_URL}/main?_id=${user._id}`);
       })
       .catch(err => {
         res.status(400).send(err);
@@ -41,13 +42,13 @@ app.get('/VKverify', (req, res) => {
   })
 });
 
-app.get('/VKgetfriends/:vkId', (req, res) => {
-  const vkId = req.params['vkId'];
+app.get('/VKgetfriends/:_id', (req, res) => {
+  const _id = req.params['_id'];
 
-  User.findOne({vkId})
+  User.findOne({_id})
     .then(user => {
       if (!user) {
-        return res.status(400).send(`no user with vkId: ${vkId}`);
+        return res.status(400).send(`no user with _id: ${_id}`);
       }
 
       const getFriendsURL = `https://api.vk.com/method/friends.get?v=5.101&access_token=${user.vkToken}&order=random&count=5&fields=photo_50,online`;
@@ -67,13 +68,13 @@ app.get('/VKgetfriends/:vkId', (req, res) => {
     });
 });
 
-app.delete('/VKlogout/:vkId', (req, res) => {
-  const vkId = req.params['vkId'];
+app.delete('/VKlogout/:_id', (req, res) => {
+  const _id = req.params['_id'];
 
-  User.findOneAndDelete({vkId})
+  User.findOneAndDelete({_id})
     .then(user => {
       if (!user) {
-        return res.status(404).send(`no user with vkId: ${vkId}`);
+        return res.status(404).send(`no user with _id: ${_id}`);
       }
 
       res.status(200).send();

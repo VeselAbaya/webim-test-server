@@ -20,7 +20,7 @@ app.get('/VKverify', (req, res) => {
 
   request.get(accessTokenURL, (err, accessTokenResponse) => {
     if (err) {
-      res.status(400).send(err);
+      return res.status(400).send(err);
     }
 
     const body = JSON.parse(accessTokenResponse.body);
@@ -40,12 +40,12 @@ app.get('/VKgetfriends/:vkId', (req, res) => {
   User.findOne({vkId})
     .then(user => {
       if (!user) {
-        res.status(400).send(`no user with vkId: ${vkId}`);
+        return res.status(400).send(`no user with vkId: ${vkId}`);
       }
 
-      request(
-        `https://api.vk.com/method/friends.get?v=5.101&access_token=${user.vkToken}&order=random&count=5&fields=photo_50,online`,
-        (err, response) => {
+      const getFriendsURL = `https://api.vk.com/method/friends.get?v=5.101&access_token=${user.vkToken}&order=random&count=5&fields=photo_50,online`;
+
+      request(getFriendsURL, (err, response) => {
           const body = JSON.parse(response.body);
           if (err || body.error) {
             return res.status(400).send(err || body.error);

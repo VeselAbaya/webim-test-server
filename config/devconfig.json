@@ -1,5 +1,5 @@
 {
-  "PORT": 3800,
+  "PORT": 8080,
   "MONGODB_URI": "mongodb://localhost:27017/WebimTest",
   "CLIENT_URL": "http://localhost:4200"
 }

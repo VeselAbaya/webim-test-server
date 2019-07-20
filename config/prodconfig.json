@@ -1,0 +1,5 @@
+{
+  "CORS_DOMEN": "https://veselabaya.github.io",
+  "CLIENT_URL": "https://veselabaya.github.io/webim-test-front",
+  "VK_REDIRECT_URI": "https://antay-webim-test-server.herokuapp.com"
+}
